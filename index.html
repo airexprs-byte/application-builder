@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application Builder — Manpower Recruiting</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --navy: #1B2A4A;
+    --navy-deep: #101c33;
+    --gold: #B8862E;
+    --gold-light: #E3B94D;
+    --paper: #F6F4EE;
+    --card: #FFFFFF;
+    --ink: #1F2430;
+    --muted: #6B7280;
+    --line: #DCD7C9;
+    --line-soft: #EAE7DC;
+    --danger: #B23A3A;
+    --radius: 3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Inter", -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3, .serif{ font-family: "Source Serif 4", Georgia, serif; }
+
+  /* ---------- App Shell ---------- */
+  .topbar{
+    background: var(--navy);
+    color: #fff;
+    padding: 18px 28px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap: 16px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .topbar .brand{ display:flex; align-items:center; gap:12px; }
+  .topbar .brand-mark{
+    width:38px; height:38px; border-radius:50%;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    display:flex; align-items:center; justify-content:center;
+    font-family:"Source Serif 4", serif; font-weight:700; color: var(--navy-deep); font-size:17px;
+    flex-shrink:0;
+  }
+  .topbar h1{ font-size: 19px; margin:0; font-weight:600; letter-spacing:.2px; }
+  .topbar p{ margin:2px 0 0; font-size:12.5px; color:#C9D2E3; }
+  .topbar button{
+    background: var(--gold);
+    color: var(--navy-deep);
+    border:none;
+    padding:10px 18px;
+    font-weight:600;
+    font-size:13.5px;
+    border-radius: var(--radius);
+    cursor:pointer;
+    font-family:inherit;
+    transition: background .15s ease;
+  }
+  .topbar button:hover{ background: var(--gold-light); }
+  .topbar .btn-secondary{
+    background: transparent;
+    color:#fff;
+    border: 1px solid rgba(255,255,255,.35);
+  }
+  .topbar .btn-secondary:hover{ background: rgba(255,255,255,.08); }
+  .topbar .actions{ display:flex; gap:10px; }
+
+  .layout{
+    display:grid;
+    grid-template-columns: minmax(340px, 460px) 1fr;
+    gap: 0;
+    min-height: calc(100vh - 76px);
+  }
+  @media (max-width: 980px){
+    .layout{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Form Panel ---------- */
+  .form-panel{
+    background: var(--card);
+    border-right: 1px solid var(--line);
+    padding: 28px 28px 80px;
+    overflow-y: auto;
+    max-height: calc(100vh - 76px);
+  }
+  .section-title{
+    font-size: 11px;
+    font-weight:700;
+    letter-spacing: .06em;
+    color: var(--navy);
+    margin: 30px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--navy);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .section-title:first-child{ margin-top:0; }
+  .field-row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px; }
+  .field-row.single{ grid-template-columns: 1fr; }
+  .field{ display:flex; flex-direction:column; gap:5px; }
+  .field label{ font-size: 12px; color: var(--muted); font-weight:600; }
+  .field input, .field select, .field textarea{
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 9px 10px;
+    font-size: 13.5px;
+    font-family: inherit;
+    background: #FDFCFA;
+    color: var(--ink);
+  }
+  .field input:focus, .field select:focus, .field textarea:focus{
+    outline: none;
+    border-color: var(--navy);
+    background: #fff;
+  }
+  .field textarea{ resize: vertical; min-height: 54px; }
+  .checkbox-grid{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:8px; }
+  .checkbox-item{
+    display:flex; align-items:center; gap:7px;
+    border:1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 8px 9px;
+    font-size: 12.5px;
+    background:#FDFCFA;
+  }
+  .checkbox-item input{ width:14px; height:14px; accent-color: var(--navy); }
+
+  .upload-box{
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+    padding: 14px;
+    text-align:center;
+    cursor:pointer;
+    background:#FDFCFA;
+    transition: border-color .15s ease;
+    position:relative;
+  }
+  .upload-box:hover{ border-color: var(--gold); }
+  .upload-box.has-image{ padding: 8px; }
+  .upload-box img{ max-width:100%; max-height:120px; display:block; margin:0 auto; border-radius:2px; }
+  .upload-box .hint{ font-size:11.5px; color: var(--muted); margin-top:4px; }
+  .upload-box .remove-img{
+    position:absolute; top:6px; right:6px;
+    background: var(--danger); color:#fff; border:none;
+    width:20px; height:20px; border-radius:50%; font-size:12px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; line-height:1;
+  }
+  .upload-row{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+  .upload-row .field label{ margin-bottom:2px; }
+
+  .company-note{
+    font-size: 11.5px;
+    color: var(--muted);
+    background: #F2EFE6;
+    border-left: 3px solid var(--gold);
+    padding: 8px 10px;
+    margin-bottom: 16px;
+    border-radius: 0 var(--radius) var(--radius) 0;
+  }
+
+  /* ---------- Preview Panel ---------- */
+  .preview-panel{
+    padding: 32px;
+    overflow-y: auto;
+    max-height: calc(100vh - 76px);
+    display:flex;
+    justify-content:center;
+    background:
+      repeating-linear-gradient(45deg, rgba(27,42,74,0.015) 0, rgba(27,42,74,0.015) 1px, transparent 1px, transparent 14px),
+      var(--paper);
+  }
+  #docWrap{ width:100%; max-width: 800px; }
+
+  #applicationDoc{
+    background: #fff;
+    width: 800px;
+    max-width:100%;
+    margin: 0 auto;
+    padding: 28px 30px 34px;
+    box-shadow: 0 6px 24px rgba(16,28,51,0.12);
+    font-family: "Inter", sans-serif;
+    color: var(--ink);
+    font-size: 12.5px;
+  }
+  .doc-header{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--navy);
+    margin-bottom: 14px;
+  }
+  .doc-header .co-block{ display:flex; align-items:center; gap:10px; }
+  .doc-logo{
+    width:44px;height:44px;border-radius:50%;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Source Serif 4",serif; font-weight:700; color:var(--navy-deep); font-size:18px;
+    flex-shrink:0;
+  }
+  .doc-header .co-name{ font-family:"Source Serif 4", serif; font-weight:700; font-size:16px; color: var(--navy); line-height:1.15; }
+  .doc-header .co-sub{ font-size:10px; color: var(--muted); letter-spacing:.03em; margin-top:2px;}
+  .doc-header .lic{ font-size:10.5px; color: var(--muted); margin-top:5px; font-style:italic; }
+  .doc-header .co-right{ text-align:right; font-size:10.5px; color: var(--muted); }
+  .doc-title{
+    text-align:center; font-family:"Source Serif 4", serif; font-weight:600;
+    font-size: 16px; color: var(--navy); margin: 0 0 14px;
+  }
+
+  table.doc-table{ width:100%; border-collapse: collapse; margin-bottom: 14px; }
+  table.doc-table td{ border:1px solid var(--line); padding:6px 9px; font-size:12px; vertical-align:top; }
+  table.doc-table td.k{ background:#F2EFE6; font-weight:600; width:34%; color: var(--navy-deep); }
+  .band{
+    background: var(--navy); color:#fff; font-weight:700; font-size:11px;
+    letter-spacing:.03em; padding:6px 9px; margin: 16px 0 0;
+  }
+  .doc-grid{ display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-top:0; }
+  .photo-col{ display:flex; flex-direction:column; gap:10px; align-items:center; }
+  .photo-small{
+    width: 110px; height: 130px; border:1px solid var(--line); background:#F2EFE6;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    font-size:10px; color:var(--muted); text-align:center;
+  }
+  .photo-small img, .photo-big img{ width:100%; height:100%; object-fit:cover; }
+  .photo-big{
+    width: 100%; max-width:260px; aspect-ratio: 3/4; border:1px solid var(--line); background:#F2EFE6;
+    display:flex; align-items:center; justify-content:center; overflow:hidden;
+    font-size:10.5px; color:var(--muted); text-align:center; margin-top:4px;
+  }
+  .name-strip{
+    display:flex; justify-content:space-between; align-items:center;
+    background:#F2EFE6; border:1px solid var(--line); border-top:none;
+    padding:7px 9px; font-size:12.5px; margin-bottom:14px;
+  }
+  .name-strip b{ color: var(--navy-deep); }
+  .remarks-box{
+    border:1px solid var(--line); min-height:44px; padding:8px 9px; font-size:11.5px; color:var(--ink);
+    white-space:pre-wrap;
+  }
+  .doc-footer{
+    margin-top:18px; padding-top:10px; border-top:1px solid var(--line-soft);
+    display:flex; justify-content:space-between; font-size:9.5px; color: var(--muted);
+  }
+  .lang-table td{ text-align:center; }
+  .lang-table td.lk{ text-align:left; background:#F2EFE6; font-weight:600; }
+  .yes-mark{ color: var(--navy-deep); font-weight:700; }
+
+  .empty-hint{ color:#BDBAAF; font-style:italic; }
+
+  footer.credit{
+    text-align:center; font-size:11px; color:var(--muted); padding: 18px 0 30px;
+  }
+
+  @media print{
+    .topbar, .form-panel{ display:none; }
+    .preview-panel{ padding:0; background:#fff; }
+    #applicationDoc{ box-shadow:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">A</div>
+    <div>
+      <h1>Application Builder</h1>
+      <p>Fill in the form on the left — the application updates on the right.</p>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn-secondary" id="resetBtn">Clear form</button>
+    <button id="downloadPdfBtn">Download PDF</button>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- ================= FORM PANEL ================= -->
+  <div class="form-panel">
+
+    <div class="company-note">These company details are saved in the page and stay filled in for every new application you create.</div>
+
+    <div class="section-title">Company details</div>
+    <div class="field-row">
+      <div class="field"><label>Company name</label><input id="companyName" value="AIR EXPRESS MANPOWER (PVT) LTD"></div>
+      <div class="field"><label>Licence number</label><input id="licenceNo" value="Labour Licence # 1532"></div>
+    </div>
+    <div class="field-row single">
+      <div class="field"><label>Company tagline</label><input id="companyTagline" value="MANPOWER RECRUITING AGENT &amp; VISA CONSULTANT"></div>
+    </div>
+
+    <div class="section-title">Reference &amp; post</div>
+    <div class="field-row">
+      <div class="field"><label>Ref No</label><input id="refNo" placeholder="e.g. SA/1112"></div>
+      <div class="field"><label>Date</label><input id="appDate" type="date"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Gender</label>
+        <select id="gender"><option value="">Select</option><option>Female</option><option>Male</option></select>
+      </div>
+      <div class="field"><label>Post applied for</label><input id="post" placeholder="e.g. Housemaid (Couple)"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Monthly salary</label><input id="salary" placeholder="e.g. 1200 SAR"></div>
+      <div class="field"><label>Contract period</label><input id="contractPeriod" placeholder="e.g. 2 Years"></div>
+    </div>
+
+    <div class="section-title">Applicant — personal details</div>
+    <div class="field-row single">
+      <div class="field"><label>Full name</label><input id="fullName" placeholder="Name as in passport"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Contact no.</label><input id="contactNo"></div>
+      <div class="field"><label>Nationality</label><input id="nationality" value="Sri Lankan"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Religion</label><input id="religion"></div>
+      <div class="field"><label>Date of birth</label><input id="dob" type="date"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Place of birth</label><input id="pob"></div>
+      <div class="field"><label>Living town</label><input id="livingTown"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Marital status</label>
+        <select id="marital"><option value="">Select</option><option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option></select>
+      </div>
+      <div class="field"><label>No. of children</label><input id="children" type="number" min="0"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Weight</label><input id="weight" placeholder="e.g. 50KG"></div>
+      <div class="field"><label>Height</label><input id="height" placeholder="e.g. 5'3&quot;"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Complexion</label><input id="complexion" placeholder="e.g. Fair skin"></div>
+      <div class="field"><label>Education</label><input id="education" placeholder="e.g. Grade 10"></div>
+    </div>
+
+    <div class="section-title">Passport details</div>
+    <div class="field-row">
+      <div class="field"><label>Passport number</label><input id="passNo"></div>
+      <div class="field"><label>Place of issue</label><input id="passPlace"></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Date of issue</label><input id="passIssue" type="date"></div>
+      <div class="field"><label>Date of expiry</label><input id="passExpiry" type="date"></div>
+    </div>
+
+    <div class="section-title">Language knowledge</div>
+    <div class="field-row">
+      <div class="field"><label>English</label>
+        <select id="langEnglish"><option value="">Select</option><option>Poor</option><option>Fair</option><option>Fluent</option></select>
+      </div>
+      <div class="field"><label>Arabic</label>
+        <select id="langArabic"><option value="">Select</option><option>Poor</option><option>Fair</option><option>Fluent</option></select>
+      </div>
+    </div>
+
+    <div class="section-title">Previous employment abroad</div>
+    <div class="field-row">
+      <div class="field"><label>Country</label><input id="prevCountry" placeholder="Leave blank if first time"></div>
+      <div class="field"><label>Period</label><input id="prevPeriod" placeholder="e.g. First time"></div>
+    </div>
+
+    <div class="section-title">Job reference</div>
+    <div class="checkbox-grid">
+      <label class="checkbox-item"><input type="checkbox" id="refDriving"> Driving</label>
+      <label class="checkbox-item"><input type="checkbox" id="refCleaning"> Cleaning</label>
+      <label class="checkbox-item"><input type="checkbox" id="refSewing"> Sewing</label>
+      <label class="checkbox-item"><input type="checkbox" id="refCooking"> Cooking</label>
+      <label class="checkbox-item"><input type="checkbox" id="refBabysitting"> Baby sitting</label>
+      <label class="checkbox-item"><input type="checkbox" id="refWasher"> Washer</label>
+    </div>
+
+    <div class="section-title">Photos</div>
+    <div class="upload-row">
+      <div class="field">
+        <label>Small photo (passport style)</label>
+        <div class="upload-box" id="smallUploadBox">
+          <div id="smallUploadInner">
+            <div class="hint">Click to upload<br>small photo</div>
+          </div>
+          <input type="file" id="smallPhotoInput" accept="image/*" style="display:none;">
+        </div>
+      </div>
+      <div class="field">
+        <label>Large photo (full length)</label>
+        <div class="upload-box" id="bigUploadBox">
+          <div id="bigUploadInner">
+            <div class="hint">Click to upload<br>large photo</div>
+          </div>
+          <input type="file" id="bigPhotoInput" accept="image/*" style="display:none;">
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Remarks</div>
+    <div class="field-row single">
+      <div class="field"><textarea id="remarks" placeholder="Optional notes"></textarea></div>
+    </div>
+
+  </div>
+
+  <!-- ================= PREVIEW PANEL ================= -->
+  <div class="preview-panel">
+    <div id="docWrap">
+      <div id="applicationDoc">
+
+        <div class="doc-header">
+          <div class="co-block">
+            <div class="doc-logo">A</div>
+            <div>
+              <div class="co-name" id="pCompanyName">AIR EXPRESS MANPOWER (PVT) LTD</div>
+              <div class="co-sub" id="pCompanyTagline">MANPOWER RECRUITING AGENT &amp; VISA CONSULTANT</div>
+              <div class="lic" id="pLicenceNo">Labour Licence # 1532</div>
+            </div>
+          </div>
+          <div class="co-right">
+            <div>Application generated</div>
+            <div id="pGenDate">—</div>
+          </div>
+        </div>
+
+        <div class="doc-title">APPLICATION FOR EMPLOYMENT</div>
+
+        <table class="doc-table">
+          <tr><td class="k">Ref No</td><td id="pRefNo">—</td></tr>
+          <tr><td class="k">Date</td><td id="pAppDate">—</td></tr>
+          <tr><td class="k">Gender</td><td id="pGender">—</td></tr>
+        </table>
+
+        <table class="doc-table">
+          <tr><td class="k">Post applied for</td><td id="pPost">—</td></tr>
+          <tr><td class="k">Monthly salary</td><td id="pSalary">—</td></tr>
+          <tr><td class="k">Contract period</td><td id="pContractPeriod">—</td></tr>
+        </table>
+
+        <div class="name-strip">
+          <span>NAME IN FULL</span>
+          <b id="pFullName">—</b>
+        </div>
+
+        <div class="doc-grid">
+          <div>
+            <div class="band">DETAIL OF APPLICANT</div>
+            <table class="doc-table" style="margin-top:0;">
+              <tr><td class="k">Contact no.</td><td id="pContactNo">—</td></tr>
+              <tr><td class="k">Nationality</td><td id="pNationality">—</td></tr>
+              <tr><td class="k">Religion</td><td id="pReligion">—</td></tr>
+              <tr><td class="k">Date of birth</td><td id="pDob">—</td></tr>
+              <tr><td class="k">Place of birth</td><td id="pPob">—</td></tr>
+              <tr><td class="k">Living town</td><td id="pLivingTown">—</td></tr>
+              <tr><td class="k">Marital status</td><td id="pMarital">—</td></tr>
+              <tr><td class="k">No. of children</td><td id="pChildren">—</td></tr>
+              <tr><td class="k">Weight</td><td id="pWeight">—</td></tr>
+              <tr><td class="k">Height</td><td id="pHeight">—</td></tr>
+              <tr><td class="k">Complexion</td><td id="pComplexion">—</td></tr>
+              <tr><td class="k">Education</td><td id="pEducation">—</td></tr>
+            </table>
+
+            <div class="band">PASSPORT DETAILS</div>
+            <table class="doc-table" style="margin-top:0;">
+              <tr><td class="k">Number</td><td id="pPassNo">—</td></tr>
+              <tr><td class="k">Date of issue</td><td id="pPassIssue">—</td></tr>
+              <tr><td class="k">Place of issue</td><td id="pPassPlace">—</td></tr>
+              <tr><td class="k">Date of expiry</td><td id="pPassExpiry">—</td></tr>
+            </table>
+
+            <div class="band">KNOWLEDGE OF LANGUAGE</div>
+            <table class="doc-table lang-table" style="margin-top:0;">
+              <tr><td class="lk">English</td><td id="pLangEnglish">—</td></tr>
+              <tr><td class="lk">Arabic</td><td id="pLangArabic">—</td></tr>
+            </table>
+
+            <div class="band">PREVIOUS EMPLOYMENT ABROAD</div>
+            <table class="doc-table" style="margin-top:0;">
+              <tr><td class="k">Country</td><td id="pPrevCountry">—</td></tr>
+              <tr><td class="k">Period</td><td id="pPrevPeriod">—</td></tr>
+            </table>
+
+            <div class="band">JOB REFERENCE</div>
+            <table class="doc-table" style="margin-top:0;">
+              <tr><td class="k">Driving</td><td id="pRefDriving">—</td><td class="k">Cleaning</td><td id="pRefCleaning">—</td></tr>
+              <tr><td class="k">Sewing</td><td id="pRefSewing">—</td><td class="k">Cooking</td><td id="pRefCooking">—</td></tr>
+              <tr><td class="k">Baby sitting</td><td id="pRefBabysitting">—</td><td class="k">Washer</td><td id="pRefWasher">—</td></tr>
+            </table>
+          </div>
+
+          <div>
+            <div class="band">PHOTOGRAPHS</div>
+            <div class="photo-col" style="margin-top:10px;">
+              <div class="photo-small" id="smallPhotoPreview">Small photo</div>
+              <div class="photo-big" id="bigPhotoPreview">Large photo</div>
+            </div>
+
+            <div class="band" style="margin-top:16px;">REMARKS</div>
+            <div class="remarks-box" id="pRemarks" style="margin-top:0;">—</div>
+          </div>
+        </div>
+
+        <div class="doc-footer">
+          <span>Generated with Application Builder</span>
+          <span id="pFooterDate">—</span>
+        </div>
+      </div>
+    </div>
+    <footer class="credit">This page runs entirely in your browser — nothing is uploaded to a server.</footer>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = (id) => document.getElementById(id);
+
+  // ---- text/select field bindings: [inputId, previewId, formatter?] ----
+  const bindings = [
+    ["companyName","pCompanyName"],
+    ["companyTagline","pCompanyTagline"],
+    ["licenceNo","pLicenceNo"],
+    ["refNo","pRefNo"],
+    ["appDate","pAppDate", formatDate],
+    ["gender","pGender"],
+    ["post","pPost"],
+    ["salary","pSalary"],
+    ["contractPeriod","pContractPeriod"],
+    ["fullName","pFullName"],
+    ["contactNo","pContactNo"],
+    ["nationality","pNationality"],
+    ["religion","pReligion"],
+    ["dob","pDob", formatDate],
+    ["pob","pPob"],
+    ["livingTown","pLivingTown"],
+    ["marital","pMarital"],
+    ["children","pChildren"],
+    ["weight","pWeight"],
+    ["height","pHeight"],
+    ["complexion","pComplexion"],
+    ["education","pEducation"],
+    ["passNo","pPassNo"],
+    ["passIssue","pPassIssue", formatDate],
+    ["passPlace","pPassPlace"],
+    ["passExpiry","pPassExpiry", formatDate],
+    ["langEnglish","pLangEnglish"],
+    ["langArabic","pLangArabic"],
+    ["prevCountry","pPrevCountry"],
+    ["prevPeriod","pPrevPeriod"],
+    ["remarks","pRemarks"],
+  ];
+
+  const checkboxBindings = [
+    ["refDriving","pRefDriving"],
+    ["refCleaning","pRefCleaning"],
+    ["refSewing","pRefSewing"],
+    ["refCooking","pRefCooking"],
+    ["refBabysitting","pRefBabysitting"],
+    ["refWasher","pRefWasher"],
+  ];
+
+  function formatDate(v){
+    if(!v) return "";
+    const d = new Date(v + "T00:00:00");
+    if(isNaN(d)) return v;
+    return d.toLocaleDateString("en-GB", { day:"2-digit", month:"2-digit", year:"numeric" });
+  }
+
+  function refresh(){
+    bindings.forEach(([inputId, previewId, fmt]) => {
+      const el = $(inputId);
+      const out = $(previewId);
+      if(!el || !out) return;
+      let val = el.value;
+      if(fmt) val = fmt(val);
+      out.textContent = val && val.trim() !== "" ? val : "—";
+    });
+    checkboxBindings.forEach(([inputId, previewId]) => {
+      const el = $(inputId);
+      const out = $(previewId);
+      out.innerHTML = el.checked ? '<span class="yes-mark">Yes</span>' : "—";
+    });
+    const now = new Date();
+    const stamp = now.toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+    $("pGenDate").textContent = stamp;
+    $("pFooterDate").textContent = stamp;
+  }
+
+  document.querySelectorAll(".form-panel input, .form-panel select, .form-panel textarea").forEach(el => {
+    el.addEventListener("input", refresh);
+    el.addEventListener("change", refresh);
+  });
+
+  // ---- image uploads ----
+  function setupUpload(inputId, boxId, innerId, previewId, labelText){
+    const input = $(inputId);
+    const box = $(boxId);
+    const inner = $(innerId);
+    const preview = $(previewId);
+
+    box.addEventListener("click", () => input.click());
+
+    input.addEventListener("change", () => {
+      const file = input.files[0];
+      if(!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const src = e.target.result;
+        inner.innerHTML = `<img src="${src}" alt="${labelText}"><button type="button" class="remove-img" title="Remove">✕</button>`;
+        box.classList.add("has-image");
+        preview.innerHTML = `<img src="${src}" alt="${labelText}">`;
+
+        inner.querySelector(".remove-img").addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          input.value = "";
+          inner.innerHTML = `<div class="hint">Click to upload<br>${labelText}</div>`;
+          box.classList.remove("has-image");
+          preview.innerHTML = labelText;
+        });
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+  setupUpload("smallPhotoInput","smallUploadBox","smallUploadInner","smallPhotoPreview","small photo");
+  setupUpload("bigPhotoInput","bigUploadBox","bigUploadInner","bigPhotoPreview","large photo");
+
+  // ---- reset ----
+  $("resetBtn").addEventListener("click", () => {
+    if(!confirm("Clear all fields and photos?")) return;
+    document.querySelectorAll(".form-panel input[type=text], .form-panel input:not([type]), .form-panel input[type=number], .form-panel input[type=date], .form-panel textarea").forEach(el => {
+      if(["companyName","companyTagline","licenceNo","nationality"].includes(el.id)) return;
+      el.value = "";
+    });
+    document.querySelectorAll(".form-panel select").forEach(el => el.value = "");
+    document.querySelectorAll(".form-panel input[type=checkbox]").forEach(el => el.checked = false);
+    ["smallPhotoInput","bigPhotoInput"].forEach(id => $(id).value = "");
+    $("smallUploadInner").innerHTML = `<div class="hint">Click to upload<br>small photo</div>`;
+    $("bigUploadInner").innerHTML = `<div class="hint">Click to upload<br>large photo</div>`;
+    $("smallUploadBox").classList.remove("has-image");
+    $("bigUploadBox").classList.remove("has-image");
+    $("smallPhotoPreview").innerHTML = "Small photo";
+    $("bigPhotoPreview").innerHTML = "Large photo";
+    refresh();
+  });
+
+  // ---- PDF download ----
+  $("downloadPdfBtn").addEventListener("click", async () => {
+    const btn = $("downloadPdfBtn");
+    const originalText = btn.textContent;
+    btn.textContent = "Preparing…";
+    btn.disabled = true;
+    try{
+      const node = $("applicationDoc");
+      const canvas = await html2canvas(node, { scale: 2, useCORS: true, backgroundColor: "#ffffff" });
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: "p", unit: "pt", format: "a4" });
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if(imgHeight <= pageHeight){
+        pdf.addImage(imgData, "JPEG", 0, 0, imgWidth, imgHeight);
+      } else {
+        // paginate a tall document across multiple A4 pages
+        let heightLeft = imgHeight;
+        let position = 0;
+        pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+        while(heightLeft > 0){
+          position = heightLeft - imgHeight;
+          pdf.addPage();
+          pdf.addImage(imgData, "JPEG", 0, position, imgWidth, imgHeight);
+          heightLeft -= pageHeight;
+        }
+      }
+
+      const name = ($("fullName").value || "application").trim().replace(/\s+/g, "_");
+      const ref = ($("refNo").value || "").trim().replace(/\s+/g, "_");
+      pdf.save(`${name}${ref ? "_" + ref : ""}.pdf`);
+    } catch(err){
+      alert("Something went wrong creating the PDF. Please try again.");
+      console.error(err);
+    } finally {
+      btn.textContent = originalText;
+      btn.disabled = false;
+    }
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
